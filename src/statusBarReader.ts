@@ -150,7 +150,9 @@ export class StatusBarReader {
                 }
             }
         }
+        // 默认设置为第一行，然后尝试恢复“最后阅读进度”行位置（仅当恢复记录与当前章节一致时）
         this.currentLineIndex = 0;
+        this.restoreLineIndexIfAny();
         
         this.updateLineDisplay();
 
@@ -189,6 +191,9 @@ export class StatusBarReader {
         this.statusBarItem.tooltip = fullLine;
         this.statusBarItem.show();
         this.contentVisible = true;
+        
+        // 保存“最后阅读进度”（章节+行）
+        this.persistLineIndex();
     }
 
     public show() {
@@ -198,6 +203,10 @@ export class StatusBarReader {
         }
 
         this.isVisible = true;
+
+        // 显式应用“最后阅读进度”的章节（若存在且有效则自动切换到该章节）
+        this.applySavedChapterIfAny();
+
         this.currentChapter = this.novelProvider.getCurrentChapter();
         this.updateDisplay();
         
@@ -362,5 +371,50 @@ export class StatusBarReader {
         this.upButton.dispose();
         this.downButton.dispose();
         this.chapterInfo.dispose();
+    }
+
+    // 将行位置持久化方法放入类内部
+    // 生成“最后阅读进度”存储 key（按小说文件夹维度，仅保存一个最近位置：章节+行）
+    private getReadingProgressKey(folder: string): string {
+        return `novelReader:progress:last:${folder}`;
+    }
+
+    // 尝试恢复已保存的“最后阅读进度”：如果保存的章节与当前章节一致，则恢复行索引
+    private restoreLineIndexIfAny() {
+        if (!this.currentChapter) return;
+        const folder = this.novelProvider.getNovelFolder();
+        if (!folder) return;
+        const key = this.getReadingProgressKey(folder);
+        const saved = this.context.globalState.get<{ chapterIndex: number; lineIndex: number }>(key);
+        if (saved && saved.chapterIndex === this.currentChapter.index) {
+            this.currentLineIndex = Math.max(0, Math.min(this.contentLines.length - 1, saved.lineIndex));
+        }
+    }
+
+    // 保存当前的“最后阅读进度”：写入当前章节索引与当前行索引
+    private persistLineIndex() {
+        if (!this.currentChapter) return;
+        const folder = this.novelProvider.getNovelFolder();
+        if (!folder) return;
+        const key = this.getReadingProgressKey(folder);
+        const payload = { chapterIndex: this.currentChapter.index, lineIndex: this.currentLineIndex };
+        this.context.globalState.update(key, payload);
+    }
+
+    // 根据保存的“最后阅读进度”自动切换章节
+    private applySavedChapterIfAny() {
+        const folder = this.novelProvider.getNovelFolder();
+        if (!folder) return;
+        const key = this.getReadingProgressKey(folder);
+        const saved = this.context.globalState.get<{ chapterIndex: number; lineIndex: number }>(key);
+        if (!saved) return;
+
+        const current = this.novelProvider.getCurrentChapter();
+        // 获取总章节数并钳制索引范围
+        const info = this.novelProvider.getChapterInfo();
+        const targetIndex = Math.max(0, Math.min(info.total - 1, saved.chapterIndex));
+        if (!current || current.index !== targetIndex) {
+            this.novelProvider.setCurrentChapter(targetIndex);
+        }
     }
 }

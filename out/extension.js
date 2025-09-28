@@ -8,12 +8,30 @@ const novelProvider_1 = require("./novelProvider");
 let novelReader;
 let statusBarReader;
 let novelProvider;
-function activate(context) {
+async function activate(context) {
     console.log('小说阅读器插件已激活');
     // 初始化组件
     novelProvider = new novelProvider_1.NovelProvider();
     novelReader = new novelReader_1.NovelReader(context, novelProvider);
     statusBarReader = new statusBarReader_1.StatusBarReader(context, novelProvider);
+    // 章节进度持久化：保存/恢复
+    const chapterKeyFor = (folder) => `novelReader:progress:chapter:${folder}`;
+    const restoreChapterProgress = async (folder) => {
+        const saved = context.globalState.get(chapterKeyFor(folder));
+        if (typeof saved === 'number') {
+            const list = novelProvider.getChapterList();
+            if (saved >= 0 && saved < list.length) {
+                novelProvider.setCurrentChapter(saved);
+            }
+        }
+    };
+    novelProvider.onChapterChange(() => {
+        const folder = novelProvider.getNovelFolder();
+        if (!folder)
+            return;
+        const info = novelProvider.getChapterInfo();
+        context.globalState.update(chapterKeyFor(folder), info.current - 1);
+    });
     // 注册命令
     const commands = [
         vscode.commands.registerCommand('novelReader.openNovel', () => {
@@ -32,7 +50,8 @@ function activate(context) {
             if (folderUri && folderUri[0]) {
                 const config = vscode.workspace.getConfiguration('novelReader');
                 await config.update('novelFolder', folderUri[0].fsPath, vscode.ConfigurationTarget.Global);
-                novelProvider.setNovelFolder(folderUri[0].fsPath);
+                await novelProvider.setNovelFolder(folderUri[0].fsPath);
+                await restoreChapterProgress(folderUri[0].fsPath);
                 vscode.window.showInformationMessage(`已设置小说文件夹: ${folderUri[0].fsPath}`);
             }
         }),
@@ -42,24 +61,43 @@ function activate(context) {
         vscode.commands.registerCommand('novelReader.nextChapter', () => {
             novelProvider.nextChapter();
         }),
+        // 改造：使用 createQuickPick 并将当前章节设为激活项
         vscode.commands.registerCommand('novelReader.searchChapter', async () => {
             const chapters = novelProvider.getChapterList();
             if (chapters.length === 0) {
                 vscode.window.showWarningMessage('请先选择小说文件夹');
                 return;
             }
-            const selected = await vscode.window.showQuickPick(chapters.map((chapter, index) => ({
+            // 构造 QuickPick
+            const qp = vscode.window.createQuickPick();
+            const items = chapters.map((chapter, index) => ({
                 label: chapter.title,
                 description: `第${index + 1}章`,
-                chapter: chapter,
-                index: index
-            })), {
-                placeHolder: '搜索并选择章节',
-                matchOnDescription: true
-            });
-            if (selected) {
-                novelProvider.setCurrentChapter(selected.index);
-            }
+                index
+            }));
+            qp.items = items;
+            qp.placeholder = '搜索并选择章节';
+            qp.matchOnDescription = true;
+            qp.ignoreFocusOut = false;
+            // 将当前章节作为活动项，自动滚动到该位置
+            const info = novelProvider.getChapterInfo();
+            const currentIndex = Math.max(0, Math.min(items.length - 1, info.current - 1));
+            qp.activeItems = [items[currentIndex]];
+            const disposables = [];
+            const disposeAll = () => {
+                disposables.forEach(d => d.dispose());
+                qp.dispose();
+            };
+            disposables.push(qp.onDidAccept(() => {
+                const picked = qp.selectedItems[0] ?? qp.activeItems[0];
+                if (picked) {
+                    novelProvider.setCurrentChapter(picked.index);
+                }
+                qp.hide();
+            }), qp.onDidHide(() => {
+                disposeAll();
+            }));
+            qp.show();
         }),
         vscode.commands.registerCommand('novelReader.previousLine', () => {
             statusBarReader.previousLine();
@@ -81,7 +119,8 @@ function activate(context) {
     const config = vscode.workspace.getConfiguration('novelReader');
     const novelFolder = config.get('novelFolder');
     if (novelFolder) {
-        novelProvider.setNovelFolder(novelFolder);
+        await novelProvider.setNovelFolder(novelFolder);
+        await restoreChapterProgress(novelFolder);
     }
 }
 exports.activate = activate;

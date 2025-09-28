@@ -12,9 +12,12 @@ class NovelProvider {
         this.onChapterChangeEmitter = new vscode.EventEmitter();
         this.onChapterChange = this.onChapterChangeEmitter.event;
     }
-    setNovelFolder(folderPath) {
+    async setNovelFolder(folderPath) {
         this.novelFolder = folderPath;
-        this.loadChapters();
+        await this.loadChapters();
+    }
+    getNovelFolder() {
+        return this.novelFolder;
     }
     async loadChapters() {
         if (!this.novelFolder || !fs.existsSync(this.novelFolder)) {

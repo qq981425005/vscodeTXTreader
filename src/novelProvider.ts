@@ -18,9 +18,13 @@ export class NovelProvider {
 
     constructor() {}
 
-    public setNovelFolder(folderPath: string) {
+    public async setNovelFolder(folderPath: string) {
         this.novelFolder = folderPath;
-        this.loadChapters();
+        await this.loadChapters();
+    }
+
+    public getNovelFolder(): string {
+        return this.novelFolder;
     }
 
     private async loadChapters() {

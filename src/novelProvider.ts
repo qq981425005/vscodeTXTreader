@@ -80,7 +80,7 @@ export class NovelProvider {
                 this.onChapterChangeEmitter.fire(this.chapters[0]);
             }
         } catch (error) {
-            vscode.window.showErrorMessage(`加载小说文件失败: ${error}`);
+            vscode.window.setStatusBarMessage(`加载小说文件失败: ${error}`, 3000);
         }
     }
 

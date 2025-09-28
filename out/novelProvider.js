@@ -70,7 +70,7 @@ class NovelProvider {
             }
         }
         catch (error) {
-            vscode.window.showErrorMessage(`加载小说文件失败: ${error}`);
+            vscode.window.setStatusBarMessage(`加载小说文件失败: ${error}`, 3000);
         }
     }
     // 新增：从单个txt内容中解析章节

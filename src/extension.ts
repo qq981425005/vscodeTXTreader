@@ -8,7 +8,7 @@ let statusBarReader: StatusBarReader;
 let novelProvider: NovelProvider;
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log('小说阅读器插件已激活');
+    // 插件已激活
 
     // 初始化组件
     novelProvider = new NovelProvider();
@@ -57,7 +57,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 await config.update('novelFolder', folderUri[0].fsPath, vscode.ConfigurationTarget.Global);
                 await novelProvider.setNovelFolder(folderUri[0].fsPath);
                 await restoreChapterProgress(folderUri[0].fsPath);
-                vscode.window.showInformationMessage(`已设置小说文件夹: ${folderUri[0].fsPath}`);
+-                vscode.window.showInformationMessage(`已设置小说文件夹: ${folderUri[0].fsPath}`);
++                vscode.window.setStatusBarMessage(`已设置小说文件夹: ${folderUri[0].fsPath}` , 3000);
             }
         }),
         
@@ -73,7 +74,8 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('novelReader.searchChapter', async () => {
             const chapters = novelProvider.getChapterList();
             if (chapters.length === 0) {
-                vscode.window.showWarningMessage('请先选择小说文件夹');
+-                vscode.window.showWarningMessage('请先选择小说文件夹');
++                vscode.window.setStatusBarMessage('请先选择小说文件夹', 3000);
                 return;
             }
 

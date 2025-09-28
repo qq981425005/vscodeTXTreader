@@ -20,7 +20,7 @@ class NovelReader {
     }
     openNovelInTab() {
         if (!this.novelProvider.hasChapters()) {
-            vscode.window.showWarningMessage('请先选择小说文件夹');
+            vscode.window.setStatusBarMessage('请先选择小说文件夹', 3000);
             return;
         }
         this.currentChapter = this.novelProvider.getCurrentChapter();

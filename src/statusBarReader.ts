@@ -198,7 +198,8 @@ export class StatusBarReader {
 
     public show() {
         if (!this.novelProvider.hasChapters()) {
-            vscode.window.showWarningMessage('请先选择小说文件夹');
+-            vscode.window.showWarningMessage('请先选择小说文件夹');
++            vscode.window.setStatusBarMessage('请先选择小说文件夹', 3000);
             return;
         }
 
@@ -209,8 +210,8 @@ export class StatusBarReader {
 
         this.currentChapter = this.novelProvider.getCurrentChapter();
         this.updateDisplay();
-        
-        vscode.window.showInformationMessage('小说阅读器已在状态栏显示');
+-        vscode.window.showInformationMessage('小说阅读器已在状态栏显示');
++        vscode.window.setStatusBarMessage('小说阅读器已在状态栏显示', 3000);
     }
     
     private resetHideTimer() {

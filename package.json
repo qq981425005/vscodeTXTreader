@@ -1,0 +1,124 @@
+{
+  "name": "novel-reader",
+  "displayName": "小说阅读器",
+  "description": "在VSCode中阅读本地小说文件，支持状态栏和标签页阅读",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/novel-reader.git"
+  },
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:novelReader.openNovel",
+    "onCommand:novelReader.showInStatusBar",
+    "onCommand:novelReader.selectNovelFolder",
+    "onCommand:novelReader.previousLine",
+    "onCommand:novelReader.nextLine",
+    "onCommand:novelReader.previousChapter",
+    "onCommand:novelReader.nextChapter",
+    "onCommand:novelReader.searchChapter",
+    "onCommand:read-book-status-bar.prev-line",
+    "onCommand:read-book-status-bar.next-line"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "novelReader.openNovel",
+        "title": "打开小说",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.showInStatusBar",
+        "title": "在状态栏显示小说",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.selectNovelFolder",
+        "title": "选择小说文件夹",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.previousChapter",
+        "title": "上一章",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.nextChapter",
+        "title": "下一章",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.searchChapter",
+        "title": "搜索章节",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.previousLine",
+        "title": "上一行",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "novelReader.nextLine",
+        "title": "下一行",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "read-book-status-bar.prev-line",
+        "title": "上一行（兼容）",
+        "category": "小说阅读器"
+      },
+      {
+        "command": "read-book-status-bar.next-line",
+        "title": "下一行（兼容）",
+        "category": "小说阅读器"
+      }
+    ],
+    "configuration": {
+      "title": "小说阅读器",
+      "properties": {
+        "novelReader.novelFolder": {
+          "type": "string",
+          "default": "",
+          "description": "小说文件夹路径"
+        },
+        "novelReader.fontSize": {
+          "type": "number",
+          "default": 14,
+          "description": "阅读字体大小"
+        },
+        "novelReader.lineHeight": {
+          "type": "number",
+          "default": 1.6,
+          "description": "行高"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "novelReader.previousLine",
+        "key": "alt+q"
+      },
+      {
+        "command": "novelReader.nextLine",
+        "key": "alt+e"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^4.9.4",
+    "vsce": "^2.15.0"
+  }
+}

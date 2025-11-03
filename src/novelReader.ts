@@ -24,7 +24,7 @@ export class NovelReader {
 
     public openNovelInTab() {
         if (!this.novelProvider.hasChapters()) {
-            vscode.window.setStatusBarMessage('请先选择小说文件夹', 3000);
+            vscode.window.showWarningMessage('请先选择小说文件夹');
             return;
         }
 

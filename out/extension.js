@@ -9,7 +9,7 @@ let novelReader;
 let statusBarReader;
 let novelProvider;
 async function activate(context) {
-    // 插件已激活
+    console.log('小说阅读器插件已激活');
     // 初始化组件
     novelProvider = new novelProvider_1.NovelProvider();
     novelReader = new novelReader_1.NovelReader(context, novelProvider);
@@ -52,8 +52,7 @@ async function activate(context) {
                 await config.update('novelFolder', folderUri[0].fsPath, vscode.ConfigurationTarget.Global);
                 await novelProvider.setNovelFolder(folderUri[0].fsPath);
                 await restoreChapterProgress(folderUri[0].fsPath);
-                -vscode.window.showInformationMessage(`已设置小说文件夹: ${folderUri[0].fsPath}`);
-                +vscode.window.setStatusBarMessage(`已设置小说文件夹: ${folderUri[0].fsPath}`, 3000);
+                vscode.window.showInformationMessage(`已设置小说文件夹: ${folderUri[0].fsPath}`);
             }
         }),
         vscode.commands.registerCommand('novelReader.previousChapter', () => {
@@ -66,8 +65,7 @@ async function activate(context) {
         vscode.commands.registerCommand('novelReader.searchChapter', async () => {
             const chapters = novelProvider.getChapterList();
             if (chapters.length === 0) {
-                -vscode.window.showWarningMessage('请先选择小说文件夹');
-                +vscode.window.setStatusBarMessage('请先选择小说文件夹', 3000);
+                vscode.window.showWarningMessage('请先选择小说文件夹');
                 return;
             }
             // 构造 QuickPick
